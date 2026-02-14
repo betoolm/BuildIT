@@ -4,20 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  Eye,
-  LayoutDashboard,
-  BookOpen,
-  ClipboardList,
+  Lightbulb,
+  Camera,
+  Box,
+  Cable,
+  Code,
+  FlaskConical,
   Menu,
   X,
   HardHat,
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/guidance", label: "Live Guidance", icon: Eye },
-  { href: "/skills", label: "Skills", icon: BookOpen },
-  { href: "/tasks", label: "Tasks", icon: ClipboardList },
+  { href: "/project", label: "Project", icon: Lightbulb },
+  { href: "/parts", label: "Parts", icon: Camera },
+  { href: "/assembly", label: "Assembly", icon: Box },
+  { href: "/schematics", label: "Wiring", icon: Cable },
+  { href: "/firmware", label: "Firmware", icon: Code },
+  { href: "/testing", label: "Testing", icon: FlaskConical },
 ];
 
 export default function Navbar() {
@@ -35,7 +39,6 @@ export default function Navbar() {
             <span className="text-xl font-bold tracking-tight">BuildIT</span>
           </Link>
 
-          {/* Desktop nav */}
           <div className="hidden md:flex md:items-center md:gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -57,7 +60,6 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Mobile hamburger */}
           <button
             className="md:hidden rounded-lg p-2 text-muted hover:bg-surface"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -68,7 +70,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border bg-background md:hidden">
           <div className="space-y-1 px-4 py-3">

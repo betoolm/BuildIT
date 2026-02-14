@@ -1,19 +1,17 @@
 import Link from "next/link";
 import {
-  Eye,
-  Cpu,
-  Users,
+  Lightbulb,
+  Camera,
+  Box,
+  Cable,
+  Code,
+  FlaskConical,
   ArrowRight,
-  Smartphone,
-  Glasses,
-  Headphones,
-  Building2,
-  Wrench,
-  UserPlus,
   CheckCircle2,
   HardHat,
+  Cpu,
   Zap,
-  Shield,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Home() {
@@ -26,31 +24,31 @@ export default function Home() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary animate-fade-in-up">
               <HardHat className="h-4 w-4" />
-              AI-Powered Physical Work Guidance
+              Your AI Hardware Building Assistant
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl animate-fade-in-up-delay-1">
-              See what you see.{" "}
-              <span className="text-primary">Know what to do.</span>
+              From idea to{" "}
+              <span className="text-primary">working product.</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted sm:text-xl animate-fade-in-up-delay-2">
-              AI that watches through your camera and coaches you through any
-              skilled trade job in real time. Turn any worker into an expert,
-              instantly.
+              BuildIT is your AI assistant for hardware projects. It asks the
+              right questions, recognizes your parts, generates wiring
+              schematics, writes firmware, and guides you through testing.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center animate-fade-in-up-delay-3">
               <Link
-                href="/dashboard"
+                href="/project"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30"
               >
-                Open Dashboard
+                Start a Project
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/guidance"
+                href="/parts"
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-6 py-3 text-base font-semibold transition-colors hover:bg-surface"
               >
-                <Eye className="h-4 w-4" />
-                Try Live Guidance
+                <Camera className="h-4 w-4" />
+                Scan Parts
               </Link>
             </div>
           </div>
@@ -62,105 +60,123 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              How it works
+              Idea to product in 6 steps
             </h2>
             <p className="mt-4 text-lg text-muted">
-              Wear a small camera. AI sees what you see and talks you through
-              the job.
+              AI guides you through every phase of building hardware.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-3">
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: Eye,
-                title: "AI Sees",
+                icon: Lightbulb,
+                title: "1. Ideation",
                 description:
-                  'Multimodal AI processes your live camera feed — identifying parts, reading labels, spotting wear patterns, and understanding the work environment.',
+                  "Describe your idea. AI asks the right questions to nail down scope, constraints, and requirements. It suggests components and generates a Bill of Materials.",
+                href: "/project",
               },
               {
-                icon: Cpu,
-                title: "AI Reasons",
+                icon: Camera,
+                title: "2. Parts Recognition",
                 description:
-                  "The model cross-references what it sees with technical manuals, safety codes, and best practices to determine the right next step.",
+                  "Point your camera at components. AI identifies parts, reads markings, looks up datasheets, and maps everything to your BOM.",
+                href: "/parts",
               },
               {
-                icon: Users,
-                title: "AI Guides",
+                icon: Box,
+                title: "3. 3D Assembly",
                 description:
-                  '"Turn off that valve." "Use the 3/8 inch wrench." "That part looks worn — replace it." Real-time voice coaching, step by step.',
+                  "Step-by-step assembly instructions with part placement, orientation guides, and safety warnings. AI watches and confirms each step.",
+                href: "/assembly",
               },
-            ].map((step, i) => (
-              <div
-                key={i}
-                className="relative rounded-2xl border border-border bg-background p-8 shadow-sm transition-shadow hover:shadow-md"
+              {
+                icon: Cable,
+                title: "4. Wiring Schematics",
+                description:
+                  "Interactive wiring diagrams with pin-to-pin connections, wire colors, signal labels, and power rail maps. No missed connections.",
+                href: "/schematics",
+              },
+              {
+                icon: Code,
+                title: "5. Firmware",
+                description:
+                  "AI generates starter firmware, library configs, and pin definitions based on your schematic. Edit, review, and flash.",
+                href: "/firmware",
+              },
+              {
+                icon: FlaskConical,
+                title: "6. Testing",
+                description:
+                  "Structured test procedures for power, connectivity, sensors, and integration. Record results and validate your build.",
+                href: "/testing",
+              },
+            ].map((step) => (
+              <Link
+                key={step.title}
+                href={step.href}
+                className="group relative rounded-2xl border border-border bg-background p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
               >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
                   <step.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold">{step.title}</h3>
-                <p className="mt-3 text-muted leading-relaxed">
+                <h3 className="text-lg font-semibold">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted leading-relaxed">
                   {step.description}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why now */}
+      {/* What makes it different */}
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Why now
+              AI that understands hardware
             </h2>
             <p className="mt-4 text-lg text-muted">
-              Three forces have converged to make this possible today.
+              Not just a chatbot — a purpose-built assistant for physical
+              products.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-3">
+          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
+                icon: MessageSquare,
+                title: "Asks before it assumes",
+                description:
+                  "Starts with your idea and asks targeted questions about scope, environment, power, connectivity, and constraints before recommending anything.",
+              },
+              {
+                icon: Camera,
+                title: "Sees your parts",
+                description:
+                  "Camera-based recognition identifies ICs, sensors, connectors, and passives. Reads part markings and cross-references datasheets.",
+              },
+              {
+                icon: Cpu,
+                title: "Generates real schematics",
+                description:
+                  "Pin-accurate wiring diagrams with correct signal routing, pull-ups, decoupling, and power distribution. Not just block diagrams.",
+              },
+              {
                 icon: Zap,
-                title: "Multimodal AI matured",
+                title: "Writes working firmware",
                 description:
-                  "Models can now see and reason about real-world situations reliably — reading gauges, identifying parts, and understanding spatial context.",
-              },
-              {
-                icon: Smartphone,
-                title: "Hardware is everywhere",
-                description:
-                  "Phones, AirPods, smart glasses — the cameras, mics, and speakers needed are already in workers' pockets.",
-                extras: [Glasses, Headphones],
-              },
-              {
-                icon: Shield,
-                title: "Skilled labor shortage",
-                description:
-                  "Millions of trade jobs go unfilled. This makes upskilling economically urgent — and creates high-wage opportunity for workers.",
+                  "Generates compilable code with correct pin assignments, library initialization, and sensor reading logic matched to your specific hardware.",
               },
             ].map((item, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-border bg-surface p-8"
+                className="rounded-2xl border border-border bg-surface p-6"
               >
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
-                    <item.icon className="h-6 w-6 text-accent" />
-                  </div>
-                  {item.extras && (
-                    <div className="flex gap-2">
-                      {item.extras.map((ExtraIcon, j) => (
-                        <ExtraIcon
-                          key={j}
-                          className="h-5 w-5 text-muted"
-                        />
-                      ))}
-                    </div>
-                  )}
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
+                  <item.icon className="h-6 w-6 text-accent" />
                 </div>
-                <h3 className="text-xl font-semibold">{item.title}</h3>
-                <p className="mt-3 text-muted leading-relaxed">
+                <h3 className="text-lg font-semibold">{item.title}</h3>
+                <p className="mt-2 text-sm text-muted leading-relaxed">
                   {item.description}
                 </p>
               </div>
@@ -169,113 +185,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Three approaches */}
+      {/* Example project */}
       <section className="border-t border-border bg-surface py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Three paths to market
+              See it in action
             </h2>
             <p className="mt-4 text-lg text-muted">
-              Different approaches for different opportunities.
+              Explore a sample project: an IoT Smart Plant Monitor built from
+              scratch with BuildIT.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 lg:grid-cols-3">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              {
-                icon: Building2,
-                title: "Enterprise SaaS",
-                subtitle: "Sell to existing workforces",
-                description:
-                  "Deploy AI guidance across a company's field service or manufacturing teams. Reduce training time from months to days. Integrate with existing workflow and ticketing systems.",
-                features: [
-                  "Onboard new technicians in days, not months",
-                  "Reduce error rates and rework",
-                  "Capture institutional knowledge from experts",
-                  "Compliance and safety documentation",
-                ],
-              },
-              {
-                icon: Wrench,
-                title: "Vertical Platform",
-                subtitle: "Own a trade end-to-end",
-                description:
-                  "Pick a vertical like HVAC repair or home healthcare. Build a full-stack, AI-superpowered workforce that delivers the service directly to customers.",
-                features: [
-                  "Full-stack service delivery",
-                  "AI-powered quality assurance",
-                  "Branded customer experience",
-                  "Fastest path to revenue per worker",
-                ],
-              },
-              {
-                icon: UserPlus,
-                title: "Open Platform",
-                subtitle: "Anyone can become skilled",
-                description:
-                  "Build a marketplace where anyone can sign up, learn a trade through AI guidance, and start their own business or find work immediately.",
-                features: [
-                  "Democratize access to skilled trades",
-                  "Workers earn while they learn",
-                  "AI matches skills to local demand",
-                  "Built-in business tools and invoicing",
-                ],
-              },
-            ].map((approach, i) => (
+              { label: "12 parts", detail: "auto-identified from camera" },
+              { label: "10 assembly steps", detail: "with safety warnings" },
+              { label: "26 wire connections", detail: "pin-accurate schematic" },
+              { label: "2 firmware modules", detail: "ready to compile" },
+              { label: "6 test procedures", detail: "22 validation steps" },
+              { label: "ESP32 + sensors", detail: "WiFi + battery powered" },
+            ].map((item, i) => (
               <div
                 key={i}
-                className="flex flex-col rounded-2xl border border-border bg-background p-8 shadow-sm"
+                className="flex items-center gap-3 rounded-xl border border-border bg-background p-4"
               >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <approach.icon className="h-6 w-6 text-primary" />
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+                <div>
+                  <div className="font-semibold text-sm">{item.label}</div>
+                  <div className="text-xs text-muted">{item.detail}</div>
                 </div>
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
-                  {approach.subtitle}
-                </div>
-                <h3 className="text-xl font-bold">{approach.title}</h3>
-                <p className="mt-3 text-muted leading-relaxed">
-                  {approach.description}
-                </p>
-                <ul className="mt-6 space-y-3 flex-1">
-                  {approach.features.map((feature, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Ready to build the future of work?
-            </h2>
-            <p className="mt-4 text-lg text-muted">
-              Explore the platform, try the live guidance demo, or browse the
-              skills library.
-            </p>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-dark"
-              >
-                Go to Dashboard
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/skills"
-                className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-base font-semibold transition-colors hover:bg-surface"
-              >
-                Browse Skills
-              </Link>
-            </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/project"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-dark"
+            >
+              Explore the Project
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -288,7 +238,7 @@ export default function Home() {
             <span className="font-semibold">BuildIT</span>
           </div>
           <p className="mt-2">
-            AI Guidance for Physical Work — See, Reason, Guide.
+            AI Hardware Building Assistant — Idea to Product.
           </p>
         </div>
       </footer>
