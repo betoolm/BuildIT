@@ -4,30 +4,22 @@ import { useState } from "react";
 import {
   Code,
   FileCode,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
   Copy,
   Check,
   Package,
+  ChevronDown,
+  ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
-import { sampleProject } from "@/lib/data";
-import type { FirmwareModule } from "@/lib/data";
+import { useProject, type CodeSnippet } from "@/lib/project-context";
+import Link from "next/link";
 
-const statusStyles = {
-  draft: { bg: "bg-muted/10", text: "text-muted", label: "Draft" },
-  review: { bg: "bg-accent/10", text: "text-accent", label: "Review" },
-  tested: { bg: "bg-primary/10", text: "text-primary", label: "Tested" },
-  complete: { bg: "bg-success/10", text: "text-success", label: "Complete" },
-};
-
-function FirmwareCard({ module }: { module: FirmwareModule }) {
+function FirmwareCard({ snippet }: { snippet: CodeSnippet }) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const status = statusStyles[module.status];
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(module.code);
+    await navigator.clipboard.writeText(snippet.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -45,38 +37,47 @@ function FirmwareCard({ module }: { module: FirmwareModule }) {
               <FileCode className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold">{module.name}</h3>
-              <p className="text-xs text-muted mt-0.5">{module.filename}</p>
+              <h3 className="font-semibold">{snippet.name}</h3>
+              <p className="text-xs text-muted mt-0.5">
+                {snippet.filename} &middot; {snippet.language}
+              </p>
             </div>
           </div>
-          <span
-            className={`rounded-md px-2 py-0.5 text-xs font-medium ${status.bg} ${status.text}`}
-          >
-            {status.label}
-          </span>
+          {expanded ? (
+            <ChevronDown className="h-4 w-4 text-muted mt-1" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted mt-1" />
+          )}
         </div>
-        <p className="mt-2 text-sm text-muted">{module.description}</p>
+        <p className="mt-2 text-sm text-muted">{snippet.description}</p>
       </button>
 
       {expanded && (
         <div className="border-t border-border">
           {/* Dependencies */}
-          <div className="px-5 py-3 border-b border-border bg-surface/50">
-            <h4 className="text-xs font-semibold text-muted mb-2">
-              DEPENDENCIES
-            </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {module.dependencies.map((dep) => (
-                <span
-                  key={dep}
-                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-xs font-mono"
-                >
-                  <Package className="h-3 w-3 text-muted" />
-                  {dep}
-                </span>
-              ))}
+          {snippet.dependencies.length > 0 && (
+            <div className="px-5 py-3 border-b border-border bg-surface/50">
+              <h4 className="text-xs font-semibold text-muted mb-2">
+                DEPENDENCIES
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {snippet.dependencies.map((dep) => (
+                  <span
+                    key={dep}
+                    className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-xs font-mono"
+                  >
+                    <Package className="h-3 w-3 text-muted" />
+                    {dep}
+                  </span>
+                ))}
+              </div>
+              {snippet.installInstructions && (
+                <p className="mt-2 text-xs text-muted font-mono">
+                  {snippet.installInstructions}
+                </p>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Code */}
           <div className="relative">
@@ -99,7 +100,7 @@ function FirmwareCard({ module }: { module: FirmwareModule }) {
               </button>
             </div>
             <pre className="overflow-x-auto bg-slate-950 p-5 text-xs leading-relaxed text-slate-300 max-h-[500px]">
-              <code>{module.code}</code>
+              <code>{snippet.code}</code>
             </pre>
           </div>
         </div>
@@ -109,10 +110,31 @@ function FirmwareCard({ module }: { module: FirmwareModule }) {
 }
 
 export default function FirmwarePage() {
-  const modules = sampleProject.firmware;
+  const { codeSnippets } = useProject();
   const allDeps = Array.from(
-    new Set(modules.flatMap((m) => m.dependencies))
+    new Set(codeSnippets.flatMap((s) => s.dependencies))
   ).sort();
+
+  if (codeSnippets.length === 0) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <Code className="mx-auto h-16 w-16 text-muted/30" />
+        <h1 className="mt-6 text-2xl font-bold">No Firmware Yet</h1>
+        <p className="mt-2 text-muted max-w-md mx-auto">
+          Code snippets and firmware modules are generated by the AI once you
+          have a bill of materials and wiring diagram. Ask the AI to generate
+          firmware in the Project chat.
+        </p>
+        <Link
+          href="/project"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go to Project
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -123,115 +145,64 @@ export default function FirmwarePage() {
         </div>
         <h1 className="text-2xl font-bold sm:text-3xl">Firmware</h1>
         <p className="mt-1 text-muted">
-          AI-generated firmware modules based on your schematic. Review, edit,
-          and flash to your microcontroller.
+          AI-generated code for your project. Review, copy, and flash to your
+          microcontroller.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Firmware modules */}
         <div className="lg:col-span-2 space-y-4">
-          {modules.map((mod) => (
-            <FirmwareCard key={mod.id} module={mod} />
+          {codeSnippets.map((snippet) => (
+            <FirmwareCard key={snippet.id} snippet={snippet} />
           ))}
         </div>
 
         {/* Sidebar */}
         <div className="space-y-4">
-          {/* Status overview */}
-          <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-            <h3 className="font-semibold mb-3">Module Status</h3>
-            <div className="space-y-2">
-              {modules.map((mod) => {
-                const s = statusStyles[mod.status];
-                return (
-                  <div
-                    key={mod.id}
-                    className="flex items-center justify-between text-sm p-1.5"
-                  >
-                    <div className="flex items-center gap-2">
-                      {mod.status === "complete" ? (
-                        <CheckCircle2 className="h-4 w-4 text-success" />
-                      ) : mod.status === "tested" ? (
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                      ) : (
-                        <Clock className="h-4 w-4 text-muted" />
-                      )}
-                      <span className="truncate">{mod.name}</span>
-                    </div>
-                    <span
-                      className={`rounded-md px-2 py-0.5 text-xs font-medium ${s.bg} ${s.text}`}
-                    >
-                      {s.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {/* All dependencies */}
-          <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-            <h3 className="font-semibold mb-3">All Libraries</h3>
-            <div className="space-y-1.5">
-              {allDeps.map((dep) => (
-                <div
-                  key={dep}
-                  className="flex items-center gap-2 text-sm text-muted"
-                >
-                  <Package className="h-3.5 w-3.5 shrink-0" />
-                  <span className="font-mono text-xs">{dep}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pin mapping */}
-          <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
-            <h3 className="font-semibold mb-3">Pin Mapping</h3>
-            <div className="space-y-1.5 font-mono text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted">SDA</span>
-                <span>GPIO21</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">SCL</span>
-                <span>GPIO22</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">SOIL_1</span>
-                <span>GPIO34 (ADC)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">SOIL_2</span>
-                <span>GPIO35 (ADC)</span>
+          {allDeps.length > 0 && (
+            <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+              <h3 className="font-semibold mb-3">All Libraries</h3>
+              <div className="space-y-1.5">
+                {allDeps.map((dep) => (
+                  <div
+                    key={dep}
+                    className="flex items-center gap-2 text-sm text-muted"
+                  >
+                    <Package className="h-3.5 w-3.5 shrink-0" />
+                    <span className="font-mono text-xs">{dep}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Flash instructions */}
+          {/* Quick instructions */}
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
             <h4 className="text-sm font-semibold text-primary mb-2">
-              How to Flash
+              How to Use
             </h4>
             <ol className="space-y-1.5 text-xs text-primary/80">
-              <li>1. Install PlatformIO or Arduino IDE</li>
-              <li>2. Add the libraries listed above</li>
-              <li>3. Set board to &quot;ESP32-S3 Dev Module&quot;</li>
-              <li>4. Connect via USB-C</li>
-              <li>5. Update WiFi credentials in main.cpp</li>
-              <li>6. Compile and upload</li>
+              <li>1. Install required libraries listed above</li>
+              <li>2. Copy each code file to your project</li>
+              <li>3. Update pin definitions to match your wiring</li>
+              <li>4. Connect your board via USB</li>
+              <li>5. Compile and upload</li>
             </ol>
           </div>
 
-          {/* Warning */}
-          <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
-              <div className="text-xs text-accent/80">
-                <span className="font-semibold text-accent">Before flashing:</span>{" "}
-                Verify all wiring is correct. Incorrect wiring with active
-                firmware can damage components.
+          {/* Module count */}
+          <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+            <h3 className="font-semibold mb-3">Summary</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Code files</span>
+                <span className="font-bold">{codeSnippets.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Libraries needed</span>
+                <span className="font-bold">{allDeps.length}</span>
               </div>
             </div>
           </div>

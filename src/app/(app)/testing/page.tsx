@@ -8,39 +8,17 @@ import {
   Clock,
   ChevronDown,
   ChevronRight,
-  Zap,
-  Wifi,
-  Gauge,
-  Cog,
-  Layers,
-  Battery,
-  SkipForward,
+  ArrowLeft,
 } from "lucide-react";
-import { sampleProject } from "@/lib/data";
-import type { TestProcedure } from "@/lib/data";
-
-const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  power: Zap,
-  connectivity: Wifi,
-  sensor: Gauge,
-  actuator: Cog,
-  integration: Layers,
-  stress: Battery,
-};
-
-const statusStyles = {
-  pending: { icon: Clock, color: "text-muted", bg: "bg-muted/10", label: "Pending" },
-  pass: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", label: "Pass" },
-  fail: { icon: XCircle, color: "text-danger", bg: "bg-danger/10", label: "Fail" },
-  skipped: { icon: SkipForward, color: "text-muted", bg: "bg-muted/10", label: "Skipped" },
-};
+import { useProject, type TestProcedure } from "@/lib/project-context";
+import Link from "next/link";
 
 function TestCard({ test }: { test: TestProcedure }) {
+  const { updateTestStep } = useProject();
   const [expanded, setExpanded] = useState(test.status === "pending");
-  const status = statusStyles[test.status];
-  const StatusIcon = status.icon;
-  const CatIcon = categoryIcons[test.category] || FlaskConical;
-  const completedSteps = test.steps.filter((s) => s.passed !== undefined).length;
+  const completedSteps = test.steps.filter(
+    (s) => s.passed !== undefined
+  ).length;
 
   return (
     <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
@@ -50,8 +28,22 @@ function TestCard({ test }: { test: TestProcedure }) {
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${status.bg}`}>
-              <CatIcon className={`h-5 w-5 ${status.color}`} />
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                test.status === "pass"
+                  ? "bg-success/10"
+                  : test.status === "fail"
+                  ? "bg-danger/10"
+                  : "bg-muted/10"
+              }`}
+            >
+              {test.status === "pass" ? (
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              ) : test.status === "fail" ? (
+                <XCircle className="h-5 w-5 text-danger" />
+              ) : (
+                <FlaskConical className="h-5 w-5 text-muted" />
+              )}
             </div>
             <div>
               <h3 className="font-semibold">{test.name}</h3>
@@ -67,10 +59,19 @@ function TestCard({ test }: { test: TestProcedure }) {
           </div>
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${status.bg} ${status.color}`}
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${
+                test.status === "pass"
+                  ? "bg-success/10 text-success"
+                  : test.status === "fail"
+                  ? "bg-danger/10 text-danger"
+                  : "bg-muted/10 text-muted"
+              }`}
             >
-              <StatusIcon className="h-3 w-3" />
-              {status.label}
+              {test.status === "pass"
+                ? "Pass"
+                : test.status === "fail"
+                ? "Fail"
+                : "Pending"}
             </span>
             {expanded ? (
               <ChevronDown className="h-4 w-4 text-muted" />
@@ -91,11 +92,9 @@ function TestCard({ test }: { test: TestProcedure }) {
                   <th className="px-4 py-2 text-left font-medium">
                     Instruction
                   </th>
-                  <th className="px-4 py-2 text-left font-medium">
-                    Expected
-                  </th>
+                  <th className="px-4 py-2 text-left font-medium">Expected</th>
                   <th className="px-4 py-2 text-left font-medium">Actual</th>
-                  <th className="px-4 py-2 text-center font-medium w-20">
+                  <th className="px-4 py-2 text-center font-medium w-28">
                     Result
                   </th>
                 </tr>
@@ -112,29 +111,65 @@ function TestCard({ test }: { test: TestProcedure }) {
                         <Clock className="h-4 w-4 text-muted/40" />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      {step.instruction}
-                    </td>
+                    <td className="px-4 py-3 text-sm">{step.instruction}</td>
                     <td className="px-4 py-3">
                       <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         {step.expected}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted">
-                      {step.actual || "—"}
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        value={step.actual || ""}
+                        onChange={(e) =>
+                          updateTestStep(
+                            test.id,
+                            step.id,
+                            e.target.value,
+                            step.passed ?? true
+                          )
+                        }
+                        placeholder="Enter result..."
+                        className="w-full rounded-md border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-primary"
+                      />
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      {step.passed === true ? (
-                        <span className="text-xs font-medium text-success">
-                          PASS
-                        </span>
-                      ) : step.passed === false ? (
-                        <span className="text-xs font-medium text-danger">
-                          FAIL
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted">—</span>
-                      )}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() =>
+                            updateTestStep(
+                              test.id,
+                              step.id,
+                              step.actual || "",
+                              true
+                            )
+                          }
+                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                            step.passed === true
+                              ? "bg-success text-white"
+                              : "bg-surface text-muted hover:text-success hover:bg-success/10 border border-border"
+                          }`}
+                        >
+                          Pass
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateTestStep(
+                              test.id,
+                              step.id,
+                              step.actual || "",
+                              false
+                            )
+                          }
+                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                            step.passed === false
+                              ? "bg-danger text-white"
+                              : "bg-surface text-muted hover:text-danger hover:bg-danger/10 border border-border"
+                          }`}
+                        >
+                          Fail
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -148,22 +183,43 @@ function TestCard({ test }: { test: TestProcedure }) {
 }
 
 export default function TestingPage() {
-  const tests = sampleProject.tests;
+  const { testPlan } = useProject();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const filtered =
     statusFilter === "all"
-      ? tests
-      : tests.filter((t) => t.status === statusFilter);
+      ? testPlan
+      : testPlan.filter((t) => t.status === statusFilter);
 
-  const passCount = tests.filter((t) => t.status === "pass").length;
-  const failCount = tests.filter((t) => t.status === "fail").length;
-  const pendingCount = tests.filter((t) => t.status === "pending").length;
-  const totalSteps = tests.reduce((sum, t) => sum + t.steps.length, 0);
-  const passedSteps = tests.reduce(
+  const passCount = testPlan.filter((t) => t.status === "pass").length;
+  const failCount = testPlan.filter((t) => t.status === "fail").length;
+  const pendingCount = testPlan.filter((t) => t.status === "pending").length;
+  const totalSteps = testPlan.reduce((sum, t) => sum + t.steps.length, 0);
+  const passedSteps = testPlan.reduce(
     (sum, t) => sum + t.steps.filter((s) => s.passed === true).length,
     0
   );
+  const progressPct = totalSteps > 0 ? Math.round((passedSteps / totalSteps) * 100) : 0;
+
+  if (testPlan.length === 0) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <FlaskConical className="mx-auto h-16 w-16 text-muted/30" />
+        <h1 className="mt-6 text-2xl font-bold">No Test Plan Yet</h1>
+        <p className="mt-2 text-muted max-w-md mx-auto">
+          Test procedures are generated by the AI once your project has
+          firmware. Ask the AI to generate a test plan in the Project chat.
+        </p>
+        <Link
+          href="/project"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go to Project
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -174,8 +230,8 @@ export default function TestingPage() {
         </div>
         <h1 className="text-2xl font-bold sm:text-3xl">Testing</h1>
         <p className="mt-1 text-muted">
-          Structured test procedures to validate your build. Record results and
-          track pass/fail status.
+          AI-generated test procedures. Record results and mark each step as
+          pass or fail.
         </p>
       </div>
 
@@ -205,27 +261,19 @@ export default function TestingPage() {
       <div className="mb-6 rounded-xl border border-border bg-background p-4 shadow-sm">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="font-medium">Overall Test Progress</span>
-          <span className="font-bold">
-            {Math.round((passedSteps / totalSteps) * 100)}%
-          </span>
+          <span className="font-bold">{progressPct}%</span>
         </div>
         <div className="h-2.5 rounded-full bg-border overflow-hidden flex">
           <div
             className="h-full bg-success transition-all"
-            style={{ width: `${(passedSteps / totalSteps) * 100}%` }}
+            style={{ width: `${progressPct}%` }}
           />
-          {failCount > 0 && (
-            <div
-              className="h-full bg-danger transition-all"
-              style={{ width: `${(failCount / tests.length) * 100 * 0.5}%` }}
-            />
-          )}
         </div>
       </div>
 
       {/* Filters */}
       <div className="mb-4 flex items-center gap-2">
-        {["all", "pass", "fail", "pending", "skipped"].map((s) => (
+        {["all", "pass", "fail", "pending"].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
