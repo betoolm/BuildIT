@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   WifiOff,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { useProject } from "@/lib/project-context";
 import { phaseOrder, phaseLabels } from "@/lib/data";
@@ -29,16 +30,6 @@ const phaseIcons: Record<string, React.ComponentType<{ className?: string }>> = 
   firmware: Code,
   testing: FlaskConical,
   complete: CheckCircle2,
-};
-
-const phaseHrefs: Record<string, string> = {
-  ideation: "/project",
-  parts: "/parts",
-  assembly: "/assembly",
-  wiring: "/schematics",
-  firmware: "/firmware",
-  testing: "/testing",
-  complete: "/project",
 };
 
 export default function ProjectPage() {
@@ -54,12 +45,14 @@ export default function ProjectPage() {
     warnings,
     aiEnabled,
     loading,
+    hasProjectData,
     sendMessage,
     setPhase,
     resetProject,
   } = useProject();
 
   const [input, setInput] = useState("");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -74,6 +67,11 @@ export default function ProjectPage() {
     if (!input.trim() || loading) return;
     sendMessage(input.trim());
     setInput("");
+  };
+
+  const handleReset = () => {
+    resetProject();
+    setShowResetConfirm(false);
   };
 
   const currentPhaseIndex = phaseOrder.indexOf(phase);
@@ -97,14 +95,57 @@ export default function ProjectPage() {
               : "New Project"}
           </h1>
         </div>
-        <button
-          onClick={resetProject}
-          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-surface transition-colors"
-        >
-          <RotateCcw className="h-3 w-3" />
-          New Project
-        </button>
+        {hasProjectData ? (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="flex items-center gap-2 rounded-lg bg-danger/10 border border-danger/20 px-4 py-2 text-sm font-medium text-danger hover:bg-danger/20 transition-colors"
+          >
+            <RotateCcw className="h-4 w-4" />
+            New Project
+          </button>
+        ) : description ? (
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-surface transition-colors"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Clear Chat
+          </button>
+        ) : null}
       </div>
+
+      {/* Reset confirmation dialog */}
+      {showResetConfirm && (
+        <div className="mb-6 rounded-xl border-2 border-danger/30 bg-danger/5 p-5">
+          <div className="flex items-start gap-3">
+            <Trash2 className="h-5 w-5 shrink-0 mt-0.5 text-danger" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-danger">
+                Start a new project?
+              </h3>
+              <p className="text-sm text-danger/70 mt-1">
+                This will clear your current project including the parts list,
+                assembly steps, wiring diagram, firmware, and test plan. This
+                cannot be undone.
+              </p>
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  onClick={handleReset}
+                  className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white hover:bg-danger/90 transition-colors"
+                >
+                  Yes, start fresh
+                </button>
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI disabled banner */}
       {!aiEnabled && (
@@ -171,8 +212,9 @@ export default function ProjectPage() {
           <div className="border-b border-border px-5 py-3">
             <h2 className="font-semibold">AI Assistant</h2>
             <p className="text-xs text-muted">
-              Describe your project. I&apos;ll ask questions and generate everything you
-              need.
+              {hasProjectData
+                ? "Ask follow-up questions, request changes, or describe a completely new project."
+                : "Describe your project. I'll ask questions and generate everything you need."}
             </p>
           </div>
 
@@ -208,6 +250,23 @@ export default function ProjectPage() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Switch project hint when project already has data */}
+          {hasProjectData && (
+            <div className="border-t border-border bg-surface/50 px-5 py-2.5 flex items-center justify-between">
+              <p className="text-xs text-muted">
+                Want to build something else? Type your new idea below — the AI
+                will generate fresh materials. Or{" "}
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="text-primary font-medium hover:underline"
+                >
+                  start completely fresh
+                </button>
+                .
+              </p>
+            </div>
+          )}
+
           <div className="border-t border-border p-4">
             <div className="flex items-center gap-2">
               <input
@@ -216,9 +275,9 @@ export default function ProjectPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder={
-                  phase === "ideation"
-                    ? "Describe what you want to build..."
-                    : "Ask a question, request changes, troubleshoot..."
+                  hasProjectData
+                    ? "Ask a question, request changes, or describe a new project..."
+                    : "Describe what you want to build..."
                 }
                 disabled={loading}
                 className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"

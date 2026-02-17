@@ -136,6 +136,7 @@ interface ProjectContextType extends ProjectState {
   takeWiringPhoto: (imageBase64: string) => Promise<void>;
   clearVisionResult: () => void;
   resetProject: () => void;
+  hasProjectData: boolean;
 }
 
 const initialState: ProjectState = {
@@ -233,8 +234,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           next.loading = false;
           next.aiEnabled = data.aiEnabled !== false;
 
-          // Update description from first user message if not set
+          // Update description: set it from first user message, or update
+          // it when the AI generates a fresh BOM (means new project scope)
           if (!prev.description && content.length > 10) {
+            next.description = content;
+          } else if (data.bom?.length && data.bom.length > 0) {
+            // AI sent a new BOM — update description to the latest user message
+            // so the project title reflects what the user most recently asked for
             next.description = content;
           }
 
@@ -437,6 +443,12 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const hasProjectData =
+    state.bom.length > 0 ||
+    state.assemblySteps.length > 0 ||
+    state.connections.length > 0 ||
+    state.codeSnippets.length > 0;
+
   return (
     <ProjectContext.Provider
       value={{
@@ -448,6 +460,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         takeWiringPhoto,
         clearVisionResult,
         resetProject,
+        hasProjectData,
       }}
     >
       {children}
